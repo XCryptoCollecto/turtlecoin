@@ -524,7 +524,7 @@ bool Core::getWalletSyncData(
     }
     catch (std::exception &e)
     {
-        logger(Logging::ERROR) << "Failed to get wallet info: " << e.what();
+        logger(Logging::ERROR) << "Failed to get wallet sync data: " << e.what();
         return false;
     }
 }
@@ -1199,14 +1199,14 @@ bool Core::getGlobalIndexesForRange(
                 getBinaryArrayHash(toBinaryArray(block.baseTransaction))
             );
         }
-
+        
         indexes = mainChain->getGlobalIndexes(transactionHashes);
 
         return true;
     }
     catch (std::exception &e)
     {
-        logger(Logging::ERROR) << "Failed to get wallet info: " << e.what();
+        logger(Logging::ERROR) << "Failed to get global indexes: " << e.what();
         return false;
     }
 }
