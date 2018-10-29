@@ -16,6 +16,8 @@
 // along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+
+#include <unordered_set>
 #include <vector>
 #include <CryptoNote.h>
 
@@ -68,6 +70,11 @@ public:
   virtual bool getWalletSyncData(const std::vector<Crypto::Hash> &knownBlockHashes, uint64_t startHeight,
                                  uint64_t startTimestamp, std::vector<WalletTypes::WalletBlockInfo> &blocks) const = 0;
 
+  virtual bool getTransactionsStatus(
+    std::unordered_set<Crypto::Hash> transactionHashes,
+    std::unordered_set<Crypto::Hash> &transactionsInPool,
+    std::unordered_set<Crypto::Hash> &transactionsInBlock,
+    std::unordered_set<Crypto::Hash> &transactionsUnknown) const = 0;
 
   virtual bool hasTransaction(const Crypto::Hash& transactionHash) const = 0;
   virtual void getTransactions(const std::vector<Crypto::Hash>& transactionHashes,
