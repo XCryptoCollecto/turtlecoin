@@ -623,9 +623,6 @@ void WalletSynchronizer::downloadBlocks()
 
         if (err)
         {
-            std::cout << "Failed to download blocks from daemon: " << err << ", "
-                      << err.message() << std::endl;
-
             Utilities::sleepUnlessStopping(std::chrono::seconds(5), m_shouldStop);
         }
         else
@@ -637,9 +634,6 @@ void WalletSynchronizer::downloadBlocks()
                 Utilities::sleepUnlessStopping(std::chrono::seconds(30), m_shouldStop);
                 continue;
             }
-
-            std::cout << "Syncing blocks: " << newBlocks.back().blockHeight
-                      << std::endl;
 
             for (const auto &block : newBlocks)
             {

@@ -200,7 +200,7 @@ WalletBackend::WalletBackend(
 
 /* Imports a wallet from a mnemonic seed. Returns the wallet class,
    or an error. */
-std::tuple<WalletError, WalletBackend> WalletBackend::importWalletFromSeed(
+std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::importWalletFromSeed(
     const std::string mnemonicSeed,
     const std::string filename,
     const std::string password,
@@ -211,7 +211,7 @@ std::tuple<WalletError, WalletBackend> WalletBackend::importWalletFromSeed(
     /* Check the filename is valid */
     if (WalletError error = checkNewWalletFilename(filename); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr}; 
     }
 
     /* Convert the mnemonic into a private spend key */
@@ -219,7 +219,7 @@ std::tuple<WalletError, WalletBackend> WalletBackend::importWalletFromSeed(
 
     if (mnemonicError)
     {
-        return {mnemonicError, WalletBackend()};
+        return {mnemonicError, nullptr}; 
     }
 
     Crypto::SecretKey privateViewKey;
@@ -233,25 +233,25 @@ std::tuple<WalletError, WalletBackend> WalletBackend::importWalletFromSeed(
        constructor */
     bool newWallet = false;
 
-    WalletBackend wallet(
+    const std::shared_ptr<WalletBackend> wallet(new WalletBackend(
         filename, password, privateSpendKey, privateViewKey,
         scanHeight, newWallet, daemonHost, daemonPort
-    );
+    ));
 
-    if (WalletError error = wallet.init(); error != SUCCESS)
+    if (WalletError error = wallet->init(); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr};
     }
 
     /* Save to disk */
-    WalletError error = wallet.save();
+    WalletError error = wallet->save();
 
-    return {error, std::move(wallet)};
+    return {error, wallet};
 }
 
 /* Imports a wallet from a private spend key and a view key. Returns
    the wallet class, or an error. */
-std::tuple<WalletError, WalletBackend> WalletBackend::importWalletFromKeys(
+std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::importWalletFromKeys(
     const Crypto::SecretKey privateSpendKey,
     const Crypto::SecretKey privateViewKey,
     const std::string filename,
@@ -263,33 +263,33 @@ std::tuple<WalletError, WalletBackend> WalletBackend::importWalletFromKeys(
     /* Check the filename is valid */
     if (WalletError error = checkNewWalletFilename(filename); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr}; 
     }
 
     /* Just defining here so it's more obvious what we're doing in the
        constructor */
     bool newWallet = false;
 
-    auto wallet = WalletBackend(
+    const std::shared_ptr<WalletBackend> wallet(new WalletBackend(
         filename, password, privateSpendKey, privateViewKey, scanHeight,
         newWallet, daemonHost, daemonPort
-    );
+    ));
 
-    if (WalletError error = wallet.init(); error != SUCCESS)
+    if (WalletError error = wallet->init(); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr};
     }
 
     /* Save to disk */
-    WalletError error = wallet.save();
+    WalletError error = wallet->save();
 
-    return {error, std::move(wallet)};
+    return {error, wallet};
 }
 
 /* Imports a view wallet from a private view key and an address.
    Returns the wallet class, or an error. */
 /* TODO: Parse address into public spend key, pass to synchronizer */
-std::tuple<WalletError, WalletBackend> WalletBackend::importViewWallet(
+std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::importViewWallet(
     const Crypto::SecretKey privateViewKey,
     const std::string address,
     const std::string filename,
@@ -301,27 +301,27 @@ std::tuple<WalletError, WalletBackend> WalletBackend::importViewWallet(
     /* Check the filename is valid */
     if (WalletError error = checkNewWalletFilename(filename); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr}; 
     }
 
-    auto wallet = WalletBackend(
+    const std::shared_ptr<WalletBackend> wallet(new WalletBackend(
         filename, password, privateViewKey, address, scanHeight, daemonHost,
         daemonPort
-    );
+    ));
 
-    if (WalletError error = wallet.init(); error != SUCCESS)
+    if (WalletError error = wallet->init(); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr}; 
     }
 
     /* Save to disk */
-    WalletError error = wallet.save();
+    WalletError error = wallet->save();
 
-    return {error, std::move(wallet)};
+    return {error, wallet};
 }
 
 /* Creates a new wallet with the given filename and password */
-std::tuple<WalletError, WalletBackend> WalletBackend::createWallet(
+std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::createWallet(
     const std::string filename,
     const std::string password,
     const std::string daemonHost,
@@ -330,7 +330,7 @@ std::tuple<WalletError, WalletBackend> WalletBackend::createWallet(
     /* Check the filename is valid */
     if (WalletError error = checkNewWalletFilename(filename); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr};
     }
 
     CryptoNote::KeyPair spendKey;
@@ -350,24 +350,24 @@ std::tuple<WalletError, WalletBackend> WalletBackend::createWallet(
     bool newWallet = true;
     uint64_t scanHeight = 0;
 
-    auto wallet = WalletBackend(
+    const std::shared_ptr<WalletBackend> wallet(new WalletBackend(
         filename, password, spendKey.secretKey, privateViewKey,
         scanHeight, newWallet, daemonHost, daemonPort
-    );
+    ));
 
-    if (WalletError error = wallet.init(); error != SUCCESS)
+    if (WalletError error = wallet->init(); error != SUCCESS)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr};
     }
 
     /* Save to disk */
-    WalletError error = wallet.save();
+    WalletError error = wallet->save();
 
-    return {error, std::move(wallet)};
+    return {error, wallet};
 }
 
 /* Opens a wallet already on disk with the given filename + password */
-std::tuple<WalletError, WalletBackend> WalletBackend::openWallet(
+std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::openWallet(
     const std::string filename,
     const std::string password,
     const std::string daemonHost,
@@ -379,7 +379,7 @@ std::tuple<WalletError, WalletBackend> WalletBackend::openWallet(
     /* Check we successfully opened the file */
     if (!file)
     {
-        return {FILENAME_NON_EXISTENT, WalletBackend()};
+        return {FILENAME_NON_EXISTENT, nullptr}; 
     }
 
     /* Read file into a buffer */
@@ -396,7 +396,7 @@ std::tuple<WalletError, WalletBackend> WalletBackend::openWallet(
 
     if (error)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr}; 
     }
 
     /* The salt we use for both PBKDF2, and AES decryption */
@@ -405,7 +405,7 @@ std::tuple<WalletError, WalletBackend> WalletBackend::openWallet(
     /* Check the file is large enough for the salt */
     if (buffer.size() < sizeof(salt))
     {
-        return {WALLET_FILE_CORRUPTED, WalletBackend()};
+        return {WALLET_FILE_CORRUPTED, nullptr};
     }
 
     /* Copy the salt to the salt array */
@@ -458,30 +458,30 @@ std::tuple<WalletError, WalletBackend> WalletBackend::openWallet(
 
     if (error)
     {
-        return {error, WalletBackend()};
+        return {error, nullptr}; 
     }
 
-    WalletBackend wallet = json::parse(decryptedData);
+    const json walletJson = json::parse(decryptedData);
+
+    const auto wallet = std::make_shared<WalletBackend>(walletJson);
 
     const bool dumpJson = true;
 
     /* For debugging purposes */
     if (dumpJson)
     {
-        json j = json::parse(decryptedData);
-
         std::ofstream o("walletData.json");
 
-        o << std::setw(4) << j << std::endl;
+        o << std::setw(4) << walletJson << std::endl;
     }
 
     /* Since json::parse() uses the default constructor, the node, filename,
        and password won't be initialized. */
-    error = wallet.initializeAfterLoad(
+    error = wallet->initializeAfterLoad(
         filename, password, daemonHost, daemonPort
     );
 
-    return {error, std::move(wallet)};
+    return {error, wallet};
 }
 
 WalletError WalletBackend::initializeAfterLoad(
@@ -506,8 +506,6 @@ WalletError WalletBackend::init()
     {
         throw std::runtime_error("Daemon has not been initialized!");
     }
-
-    std::cout << "Initializing daemon, this may hang..." << std::endl;
 
     std::promise<std::error_code> errorPromise;
     std::future<std::error_code> error = errorPromise.get_future();
@@ -561,8 +559,6 @@ WalletError WalletBackend::init()
 
     /* Launch the wallet sync process in a background thread */
     m_walletSynchronizer->start();
-
-    std::cout << "Daemon initialization completed!" << std::endl;
 
     return result;
 }
@@ -859,4 +855,33 @@ WalletError WalletBackend::importViewSubWallet(
     m_walletSynchronizer->start();
 
     return error;
+}
+
+bool WalletBackend::isViewWallet() const
+{
+    return m_subWallets->isViewWallet();
+}
+
+std::string WalletBackend::getWalletLocation() const
+{
+    return m_filename;
+}
+
+std::string WalletBackend::getPrimaryAddress() const
+{
+    return m_subWallets->getPrimaryAddress();
+}
+
+std::tuple<uint64_t, uint64_t, uint64_t> WalletBackend::getSyncStatus() const
+{
+    /* The last block the wallet has synced */
+    uint64_t walletSyncProgress = m_walletSynchronizer->getCurrentScanHeight();
+
+    /* The last block the daemon has synced */
+    uint64_t localDaemonBlockCount = m_daemon->getLastLocalBlockHeight();
+
+    /* The last block on the network, that the daemon is aware of */
+    uint64_t networkBlockCount = m_daemon->getLastKnownBlockHeight();
+
+    return {walletSyncProgress, localDaemonBlockCount, networkBlockCount};
 }

@@ -34,7 +34,7 @@ std::tuple<WalletError, Crypto::Hash> sendFusionTransactionBasic(
 
     /* Assumes the container has at least one subwallet - this is true as long
        as the static constructors were used */
-    const std::string defaultAddress = subWallets->getDefaultChangeAddress();
+    const std::string defaultAddress = subWallets->getPrimaryAddress();
 
     return sendFusionTransactionAdvanced(
         mixin, {}, defaultAddress, daemon, subWallets
@@ -50,7 +50,7 @@ std::tuple<WalletError, Crypto::Hash> sendFusionTransactionAdvanced(
 {
     if (destination == "")
     {
-        destination = subWallets->getDefaultChangeAddress();
+        destination = subWallets->getPrimaryAddress();
     }
 
     /* Validate the transaction input parameters */
@@ -215,7 +215,7 @@ std::tuple<WalletError, Crypto::Hash> sendTransactionBasic(
 
     /* Assumes the container has at least one subwallet - this is true as long
        as the static constructors were used */
-    const std::string changeAddress = subWallets->getDefaultChangeAddress();
+    const std::string changeAddress = subWallets->getPrimaryAddress();
 
     return sendTransactionAdvanced(
         destinations, mixin, fee, paymentID, {}, changeAddress, daemon,
@@ -238,7 +238,7 @@ std::tuple<WalletError, Crypto::Hash> sendTransactionAdvanced(
 
     if (changeAddress == "")
     {
-        changeAddress = subWallets->getDefaultChangeAddress();
+        changeAddress = subWallets->getPrimaryAddress();
     }
 
     /* Validate the transaction input parameters */

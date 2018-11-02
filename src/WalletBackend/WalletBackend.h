@@ -58,7 +58,7 @@ class WalletBackend
 
         /* Imports a wallet from a mnemonic seed. Returns the wallet class,
            or an error. */
-        static std::tuple<WalletError, WalletBackend> importWalletFromSeed(
+        static std::tuple<WalletError, std::shared_ptr<WalletBackend>> importWalletFromSeed(
             const std::string mnemonicSeed,
             const std::string filename,
             const std::string password,
@@ -68,7 +68,7 @@ class WalletBackend
 
         /* Imports a wallet from a private spend key and a view key. Returns
            the wallet class, or an error. */
-        static std::tuple<WalletError, WalletBackend> importWalletFromKeys(
+        static std::tuple<WalletError, std::shared_ptr<WalletBackend>> importWalletFromKeys(
             const Crypto::SecretKey privateSpendKey,
             const Crypto::SecretKey privateViewKey,
             const std::string filename,
@@ -79,7 +79,7 @@ class WalletBackend
 
         /* Imports a view wallet from a private view key and an address.
            Returns the wallet class, or an error. */
-        static std::tuple<WalletError, WalletBackend> importViewWallet(
+        static std::tuple<WalletError, std::shared_ptr<WalletBackend>> importViewWallet(
             const Crypto::SecretKey privateViewKey,
             const std::string address,
             const std::string filename,
@@ -89,14 +89,14 @@ class WalletBackend
             const uint16_t daemonPort);
 
         /* Creates a new wallet with the given filename and password */
-        static std::tuple<WalletError, WalletBackend> createWallet(
+        static std::tuple<WalletError, std::shared_ptr<WalletBackend>> createWallet(
             const std::string filename,
             const std::string password,
             const std::string daemonHost,
             const uint16_t daemonPort);
 
         /* Opens a wallet already on disk with the given filename + password */
-        static std::tuple<WalletError, WalletBackend> openWallet(
+        static std::tuple<WalletError, std::shared_ptr<WalletBackend>> openWallet(
             const std::string filename,
             const std::string password,
             const std::string daemonHost,
@@ -154,6 +154,16 @@ class WalletBackend
             const bool newWallet);
 
         void reset(uint64_t scanHeight, uint64_t timestamp);
+
+        bool isViewWallet() const;
+
+        std::string getWalletLocation() const;
+
+        std::string getPrimaryAddress() const;
+
+        /* wallet sync height, local blockchain sync height,
+           remote blockchain sync height */
+        std::tuple<uint64_t, uint64_t, uint64_t> getSyncStatus() const;
 
         /////////////////////////////
         /* Public member variables */

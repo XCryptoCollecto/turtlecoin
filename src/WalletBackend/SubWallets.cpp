@@ -543,7 +543,7 @@ std::tuple<std::vector<WalletTypes::TxInputAndOwner>, uint64_t, uint64_t>
 
 /* Gets the primary address, which is the first address created with the
    wallet */
-std::string SubWallets::getDefaultChangeAddress() const
+std::string SubWallets::getPrimaryAddress() const
 {
     std::scoped_lock lock(m_mutex);
 
