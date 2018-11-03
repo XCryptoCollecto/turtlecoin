@@ -42,7 +42,12 @@ Config parseArguments(int argc, char **argv)
 
     try
     {
-        auto result = options.parse(argc, argv);
+        const auto result = options.parse(argc, argv);
+
+        config.walletGiven = result.count("wallet-file") != 0;
+
+        /* We could check if the string is empty, but an empty password is valid */
+        config.passGiven = result.count("password") != 0;
     }
     catch (const cxxopts::OptionException& e)
     {
@@ -60,16 +65,6 @@ Config parseArguments(int argc, char **argv)
     {
         std::cout << CryptoNote::getProjectCLIHeader() << std::endl;
         exit(0);
-    }
-
-    if (!config.walletFile.empty())
-    {
-        config.walletGiven = true;
-    }
-
-    if (!config.walletPass.empty())
-    {
-        config.passGiven = true;
     }
 
     if (!remoteDaemon.empty())
