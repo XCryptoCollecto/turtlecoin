@@ -10,13 +10,6 @@
 
 #include <config/WalletConfig.h>
 
-#include <Common/Base58.h>
-#include <Common/StringTools.h>
-
-#include <CryptoNoteCore/CryptoNoteBasicImpl.h>
-#include <CryptoNoteCore/CryptoNoteTools.h>
-#include <CryptoNoteCore/TransactionExtra.h>
-
 #include <fstream>
 
 #include <iostream>
@@ -27,11 +20,16 @@
 namespace ZedUtilities
 {
 
-void confirmPassword(const std::string &walletPass, const std::string &msg)
+void confirmPassword(
+    const std::shared_ptr<WalletBackend> walletBackend,
+    const std::string msg)
 {
+    const std::string currentPassword = walletBackend->getWalletPassword();
+
     /* Password container requires an rvalue, we don't want to wipe our current
        pass so copy it into a tmp string and std::move that instead */
-    std::string tmpString = walletPass;
+    std::string tmpString = currentPassword;
+
     Tools::PasswordContainer pwdContainer(std::move(tmpString));
 
     while (!pwdContainer.read_and_validate(msg))
@@ -171,46 +169,21 @@ std::string unixTimeToDate(const uint64_t timestamp)
     return std::string(buffer);
 }
 
-std::string createIntegratedAddress(const std::string &address,
-                                    const std::string &paymentID)
-{
-    uint64_t prefix;
-
-    CryptoNote::AccountPublicAddress addr;
-
-    /* Get the private + public key from the address */
-    CryptoNote::parseAccountAddressString(prefix, addr, address);
-
-    /* Pack as a binary array */
-    CryptoNote::BinaryArray ba;
-    CryptoNote::toBinaryArray(addr, ba);
-    std::string keys = Common::asString(ba);
-
-    /* Encode prefix + paymentID + keys as an address */
-    return Tools::Base58::encode_addr
-    (
-        CryptoNote::parameters::CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX,
-        paymentID + keys
-    );
-}
-
 uint64_t getScanHeight()
 {
+    std::cout << "\n";
+
     while (true)
     {
         std::cout << InformationMsg("What height would you like to begin ")
-                  << InformationMsg("scanning your wallet from?")
-                  << std::endl
-                  << std::endl
+                  << InformationMsg("scanning your wallet from?") << "\n\n"
                   << "This can greatly speed up the initial wallet "
                   << "scanning process."
-                  << std::endl
-                  << std::endl
+                  << "\n\n"
                   << "If you do not know the exact height, "
                   << "err on the side of caution so transactions do not "
                   << "get missed."
-                  << std::endl
-                  << std::endl
+                  << "\n\n"
                   << InformationMsg("Hit enter for the sub-optimal default ")
                   << InformationMsg("of zero: ");
 

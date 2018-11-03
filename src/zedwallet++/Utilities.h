@@ -12,12 +12,14 @@
 
 #include <vector>
 
-#include <iterator>
+#include <WalletBackend/WalletBackend.h>
 
 namespace ZedUtilities
 {
 
-void confirmPassword(const std::string &walletPass, const std::string &msg="");
+void confirmPassword(
+    const std::shared_ptr<WalletBackend> walletBackend,
+    const std::string msg);
 
 void removeCharFromString(std::string &str, const char c);
 
@@ -38,9 +40,6 @@ std::string formatDollars(const uint64_t amount);
 std::string formatCents(const uint64_t amount);
 
 std::string unixTimeToDate(const uint64_t timestamp);
-
-std::string createIntegratedAddress(const std::string &address,
-                                    const std::string &paymentID);
 
 uint64_t getDivisor();
 

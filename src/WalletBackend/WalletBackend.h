@@ -102,6 +102,10 @@ class WalletBackend
             const std::string daemonHost,
             const uint16_t daemonPort);
 
+        static std::tuple<WalletError, std::string> createIntegratedAddress(
+            const std::string address,
+            const std::string paymentID);
+
         /////////////////////////////
         /* Public member functions */
         /////////////////////////////
@@ -165,6 +169,20 @@ class WalletBackend
            remote blockchain sync height */
         std::tuple<uint64_t, uint64_t, uint64_t> getSyncStatus() const;
 
+        std::string getWalletPassword() const;
+
+        WalletError changePassword(const std::string newPassword);
+
+        std::tuple<std::vector<Crypto::SecretKey>, Crypto::SecretKey> getAllPrivateKeys() const;
+
+        std::tuple<Crypto::SecretKey, Crypto::SecretKey> getPrimaryAddressPrivateKeys() const;
+
+        std::tuple<bool, std::string> getMnemonicSeed() const;
+
+        std::vector<WalletTypes::Transaction> getTransactions() const;
+
+        WalletTypes::WalletStatus getStatus() const;
+        
         /////////////////////////////
         /* Public member variables */
         /////////////////////////////

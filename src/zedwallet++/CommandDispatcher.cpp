@@ -6,56 +6,47 @@
 #include <zedwallet++/CommandDispatcher.h>
 //////////////////////////////////////////
 
+#include <zedwallet++/AddressBook.h>
+#include <zedwallet++/ColouredMsg.h>
+#include <zedwallet++/CommandImplementations.h>
 #include <zedwallet++/Open.h>
-
-/*
-#include <zedwallet/AddressBook.h>
-#include <zedwallet/ColouredMsg.h>
-#include <zedwallet/CommandImplementations.h>
-#include <zedwallet/Fusion.h>
-
-#include <zedwallet/Transfer.h>
-*/
+#include <zedwallet++/Transfer.h>
+#include <zedwallet++/Fusion.h>
 
 bool handleCommand(
     const std::string command,
     const std::shared_ptr<WalletBackend> walletBackend)
 {
     /* Basic commands */
-    /*
     if (command == "advanced")
     {
-        advanced(walletInfo);
+        advanced(walletBackend);
     }
     else if (command == "address")
     {
-        std::cout << SuccessMsg(walletInfo->walletAddress) << std::endl;
+        std::cout << SuccessMsg(walletBackend->getPrimaryAddress()) << std::endl;
     }
     else if (command == "balance")
     {
-        balance(node, walletInfo->wallet, walletInfo->viewWallet);
+        balance(walletBackend);
     }
     else if (command == "backup")
     {
-        exportKeys(walletInfo);
+        backup(walletBackend);
     }
-    else */if (command == "exit")
+    else if (command == "exit")
     {
         return false;
     }
-    /*
     else if (command == "help")
     {
-        help(walletInfo);
+        help(walletBackend);
     }
     else if (command == "transfer")
     {
-        transfer(walletInfo, node.getLastKnownBlockHeight(), false,
-                 node.feeAddress(), node.feeAmount());
+        transfer(walletBackend);
     }
-    */
     /* Advanced commands */
-    /*
     else if (command == "ab_add")
     {
         addToAddressBook();
@@ -70,12 +61,11 @@ bool handleCommand(
     }
     else if (command == "ab_send")
     {
-        sendFromAddressBook(walletInfo, node.getLastKnownBlockHeight(),
-                            node.feeAddress(), node.feeAmount());
+        sendFromAddressBook(walletBackend);
     }
     else if (command == "change_password")
     {
-        changePassword(walletInfo);
+        changePassword(walletBackend);
     }
     else if (command == "make_integrated_address")
     {
@@ -83,49 +73,54 @@ bool handleCommand(
     }
     else if (command == "incoming_transfers")
     {
-        listTransfers(true, false, walletInfo->wallet, node);
+        const bool printIncoming = true;
+        const bool printOutgoing = false;
+
+        listTransfers(printIncoming, printOutgoing, walletBackend);
     }
     else if (command == "list_transfers")
     {
-        listTransfers(true, true, walletInfo->wallet, node);
+        const bool printIncoming = true;
+        const bool printOutgoing = true;
+
+        listTransfers(printIncoming, printOutgoing, walletBackend);
     }
     else if (command == "optimize")
     {
-        fullOptimize(walletInfo->wallet, node.getLastKnownBlockHeight());
+        optimize(walletBackend);
     }
     else if (command == "outgoing_transfers")
     {
-        listTransfers(false, true, walletInfo->wallet, node);
+        const bool printIncoming = false;
+        const bool printOutgoing = true;
+
+        listTransfers(printIncoming, printOutgoing, walletBackend);
     }
     else if (command == "reset")
     {
-        reset(node, walletInfo);
+        reset(walletBackend);
     }
     else if (command == "save")
     {
-        save(walletInfo->wallet);
+        save(walletBackend);
     }
     else if (command == "save_csv")
     {
-        saveCSV(walletInfo->wallet, node);
+        saveCSV(walletBackend);
     }
     else if (command == "send_all")
     {
-        transfer(walletInfo, node.getLastKnownBlockHeight(), true,
-                 node.feeAddress(), node.feeAmount());
+        sendAll(walletBackend);
     }
     else if (command == "status")
     {
-        status(node, walletInfo->wallet);
+        status(walletBackend);
     }
-    */
     /* This should never happen */
-    /*
     else
     {
         throw std::runtime_error("Command was defined but not hooked up!");
     }
-    */
 
     return true;
 }

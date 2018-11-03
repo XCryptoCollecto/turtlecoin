@@ -388,11 +388,13 @@ void storeSentTransaction(
     /* Not initialized till it's in a block */
     const uint64_t timestamp(0), blockHeight(0), unlockTime(0);
 
+    const bool isCoinbaseTransaction = false;
+
     /* Create the unconfirmed transaction (Will be overwritten by the
        confirmed transaction later) */
     WalletTypes::Transaction tx(
         transfers, hash, fee, timestamp, blockHeight, paymentID,
-        unlockTime
+        unlockTime, isCoinbaseTransaction
     );
 
     subWallets->addUnconfirmedTransaction(tx);

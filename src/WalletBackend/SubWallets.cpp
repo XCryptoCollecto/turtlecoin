@@ -835,3 +835,38 @@ void SubWallets::reset(const uint64_t scanHeight)
         subWallet.reset(scanHeight);
     }
 }
+
+std::vector<Crypto::SecretKey> SubWallets::getPrivateSpendKeys() const
+{
+    std::vector<Crypto::SecretKey> spendKeys;
+
+    for (const auto [pubKey, subWallet] : m_subWallets)
+    {
+        spendKeys.push_back(subWallet.m_privateSpendKey);
+    }
+
+    return spendKeys;
+}
+
+Crypto::SecretKey SubWallets::getPrimaryPrivateSpendKey() const
+{
+    std::scoped_lock lock(m_mutex);
+
+    const auto it = 
+    std::find_if(m_subWallets.begin(), m_subWallets.end(), [](const auto subWallet)
+    {
+        return subWallet.second.m_isPrimaryAddress;
+    });
+
+    if (it == m_subWallets.end())
+    {
+        throw std::runtime_error("This container has no primary address!");
+    }
+
+    return it->second.m_privateSpendKey;
+}
+
+std::vector<WalletTypes::Transaction> SubWallets::getTransactions() const
+{
+    return m_transactions;
+}

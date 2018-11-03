@@ -12,16 +12,24 @@
 
 #include <string>
 
+template <typename T>
 class ColouredMsg
 {
     public:
-        ColouredMsg(std::string msg, Common::Console::Color colour) 
-                  : msg(msg), colour(colour) {}
+        ColouredMsg(
+            const T msg,
+            const Common::Console::Color colour) : 
+            msg(msg),
+            colour(colour) {}
 
-        ColouredMsg(std::string msg, int padding, 
-                    Common::Console::Color colour)
-                  : msg(msg), colour(colour), padding(padding), pad(true) {}
-
+        ColouredMsg(
+            const T msg,
+            const int padding, 
+            const Common::Console::Color colour) :
+            msg(msg),
+            colour(colour),
+            padding(padding),
+            pad(true) {}
 
         /* Set the text colour, write the message, then reset. We use a class
            as it seems the only way to have a valid << operator. We need this
@@ -53,51 +61,48 @@ class ColouredMsg
         }
 
     protected:
-        std::string msg;
+        /* Can be any class that supports the << operator */
+        T msg;
+
+        /* The colour to use */
         const Common::Console::Color colour;
+
+        /* The amount to pad the message to */
         const int padding = 0;
+
+        /* If we should pad the message */
         const bool pad = false;
 };
 
-class SuccessMsg : public ColouredMsg
+template<typename T>
+class SuccessMsg : public ColouredMsg<T>
 {
     public:
-        explicit SuccessMsg(std::string msg) 
-               : ColouredMsg(msg, Common::Console::Color::Green) {}
+        explicit SuccessMsg(T msg) 
+               : ColouredMsg<T>(msg, Common::Console::Color::Green) {}
 
-        explicit SuccessMsg(std::string msg, int padding)
-               : ColouredMsg(msg, padding, Common::Console::Color::Green) {}
+        explicit SuccessMsg(T msg, int padding)
+               : ColouredMsg<T>(msg, padding, Common::Console::Color::Green) {}
 };
 
-class InformationMsg : public ColouredMsg
+template<typename T>
+class InformationMsg : public ColouredMsg<T>
 {
     public:
-        explicit InformationMsg(std::string msg) 
-               : ColouredMsg(msg, Common::Console::Color::BrightYellow) {}
+        explicit InformationMsg(T msg) 
+               : ColouredMsg<T>(msg, Common::Console::Color::BrightYellow) {}
 
-        explicit InformationMsg(std::string msg, int padding)
-               : ColouredMsg(msg, padding, 
-                             Common::Console::Color::BrightYellow) {}
+        explicit InformationMsg(T msg, int padding)
+               : ColouredMsg<T>(msg, padding, Common::Console::Color::BrightYellow) {}
 };
 
-class SuggestionMsg : public ColouredMsg
+template<typename T>
+class WarningMsg : public ColouredMsg<T>
 {
     public:
-        explicit SuggestionMsg(std::string msg) 
-               : ColouredMsg(msg, Common::Console::Color::BrightYellow) {}
+        explicit WarningMsg(T msg) 
+               : ColouredMsg<T>(msg, Common::Console::Color::BrightRed) {}
 
-        explicit SuggestionMsg(std::string msg, int padding)
-               : ColouredMsg(msg, padding, 
-                             Common::Console::Color::BrightYellow) {}
-};
-
-class WarningMsg : public ColouredMsg
-{
-    public:
-        explicit WarningMsg(std::string msg) 
-               : ColouredMsg(msg, Common::Console::Color::BrightRed) {}
-
-        explicit WarningMsg(std::string msg, int padding)
-               : ColouredMsg(msg, padding, 
-                             Common::Console::Color::BrightRed) {}
+        explicit WarningMsg(T msg, int padding)
+               : ColouredMsg<T>(msg, padding, Common::Console::Color::BrightRed) {}
 };

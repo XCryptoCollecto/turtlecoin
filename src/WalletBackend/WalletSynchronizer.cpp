@@ -397,10 +397,12 @@ void WalletSynchronizer::processCoinbaseTransaction(
         /* Coinbase transactions can't have payment ID's */
         const std::string paymentID;
 
+        const bool isCoinbaseTransaction = true;
+
         /* Form the actual transaction */
         WalletTypes::Transaction tx(
             transfers, rawTX.hash, fee, blockTimestamp, blockHeight, paymentID,
-            rawTX.unlockTime
+            rawTX.unlockTime, isCoinbaseTransaction
         );
 
         /* Store the transaction */
@@ -444,10 +446,12 @@ void WalletSynchronizer::processTransaction(
         /* Fee is the difference between inputs and outputs */
         const uint64_t fee = sumOfInputs - sumOfOutputs;
 
+        const bool isCoinbaseTransaction = false;
+
         /* Form the actual transaction */
         const WalletTypes::Transaction tx(
             transfers, rawTX.hash, fee, blockTimestamp, blockHeight,
-            rawTX.paymentID, rawTX.unlockTime
+            rawTX.paymentID, rawTX.unlockTime, isCoinbaseTransaction
         );
 
         /* Store the transaction */

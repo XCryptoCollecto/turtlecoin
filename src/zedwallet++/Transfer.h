@@ -1,0 +1,11 @@
+// Copyright (c) 2018, The TurtleCoin Developers
+// 
+// Please see the included LICENSE file for more information.
+
+#pragma once
+
+#include <WalletBackend/WalletBackend.h>
+
+std::tuple<WalletError, Crypto::Hash> transfer(const std::shared_ptr<WalletBackend> walletBackend);
+
+std::tuple<WalletError, Crypto::Hash> sendAll(const std::shared_ptr<WalletBackend> walletBackend);

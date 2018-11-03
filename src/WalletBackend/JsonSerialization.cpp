@@ -327,6 +327,7 @@ namespace WalletTypes
             {"timestamp", t.timestamp},
             {"paymentID", t.paymentID},
             {"unlockTime", t.unlockTime},
+            {"isCoinbaseTransaction", t.isCoinbaseTransaction},
         };
     }
 
@@ -339,6 +340,7 @@ namespace WalletTypes
         t.timestamp = j.at("timestamp").get<uint64_t>();
         t.paymentID = j.at("paymentID").get<std::string>();
         t.unlockTime = j.at("unlockTime").get<uint64_t>();
+        t.isCoinbaseTransaction = j.at("isCoinbaseTransaction").get<bool>();
     }
 }
 

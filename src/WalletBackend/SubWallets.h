@@ -119,6 +119,10 @@ class SubWallets
 
         Crypto::SecretKey getPrivateViewKey() const;
 
+        std::vector<Crypto::SecretKey> getPrivateSpendKeys() const;
+
+        Crypto::SecretKey getPrimaryPrivateSpendKey() const;
+
         void markInputAsSpent(
             const Crypto::KeyImage keyImage,
             const Crypto::PublicKey publicKey,
@@ -136,6 +140,8 @@ class SubWallets
         bool isViewWallet() const;
 
         void reset(const uint64_t scanHeight);
+
+        std::vector<WalletTypes::Transaction> getTransactions() const;
 
         /////////////////////////////
         /* Public member variables */

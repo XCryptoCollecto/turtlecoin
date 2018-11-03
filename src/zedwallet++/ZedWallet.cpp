@@ -16,10 +16,24 @@ int main(int argc, char **argv)
 
     std::cout << InformationMsg(CryptoNote::getProjectCLIHeader()) << std::endl;
 
-    auto [quit, walletBackend] = selectionScreen(config);
-
-    if (!quit)
+    try
     {
-        mainLoop(walletBackend);
+        auto [quit, walletBackend] = selectionScreen(config);
+
+        if (!quit)
+        {
+            mainLoop(walletBackend);
+        }
+    }
+    catch (const std::exception &e)
+    {
+        std::cout << WarningMsg("Unexpected error: " + std::string(e.what()))
+                  << std::endl
+                  << "Please report this error, and what you were doing to "
+                  << "cause it." << std::endl;
+
+        std::cout << "Hit any key to exit: ";
+
+        getchar();
     }
 }

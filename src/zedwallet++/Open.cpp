@@ -210,6 +210,8 @@ std::shared_ptr<WalletBackend> createWallet(const Config &config)
         return nullptr;
     }
 
+    std::cout << "\n";
+
     promptSaveKeys(walletBackend);
 
     std::cout << WarningMsg("If you lose these your wallet cannot be ")

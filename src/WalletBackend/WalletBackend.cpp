@@ -6,11 +6,13 @@
 #include <WalletBackend/WalletBackend.h>
 ////////////////////////////////////////
 
+#include <Common/Base58.h>
 #include <Common/FileSystemShim.h>
 
 #include <config/CryptoNoteConfig.h>
 
 #include <CryptoNoteCore/Account.h>
+#include <CryptoNoteCore/CryptoNoteTools.h>
 #include <CryptoNoteCore/CryptoNoteBasicImpl.h>
 
 #include <cryptopp/aes.h>
@@ -194,9 +196,46 @@ WalletBackend::WalletBackend(
     );
 }
 
-/////////////////////
-/* CLASS FUNCTIONS */
-/////////////////////
+//////////////////////
+/* STATIC FUNCTIONS */
+//////////////////////
+
+std::tuple<WalletError, std::string> WalletBackend::createIntegratedAddress(
+    const std::string address,
+    const std::string paymentID)
+{
+    if (WalletError error = validatePaymentID(paymentID); error != SUCCESS)
+    {
+        return {error, std::string()};
+    }
+
+    const bool allowIntegratedAddresses = false;
+
+    if (WalletError error = validateAddresses({address}, allowIntegratedAddresses); error != SUCCESS)
+    {
+        return {error, std::string()};
+    }
+
+    uint64_t prefix;
+
+    CryptoNote::AccountPublicAddress addr;
+
+    /* Get the private + public key from the address */
+    CryptoNote::parseAccountAddressString(prefix, addr, address);
+
+    /* Pack as a binary array */
+    CryptoNote::BinaryArray ba;
+    CryptoNote::toBinaryArray(addr, ba);
+    std::string keys = Common::asString(ba);
+
+    /* Encode prefix + paymentID + keys as an address */
+    const std::string integratedAddress = Tools::Base58::encode_addr(
+        CryptoNote::parameters::CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX,
+        paymentID + keys
+    );
+
+    return {SUCCESS, integratedAddress};
+}
 
 /* Imports a wallet from a mnemonic seed. Returns the wallet class,
    or an error. */
@@ -438,15 +477,22 @@ std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::openWalle
     std::string decryptedData;
 
     /* Stream the decrypted data into the decryptedData string */
-    CryptoPP::StreamTransformationFilter stfDecryptor(
-        cbcDecryption, new CryptoPP::StringSink(decryptedData)
-    );
+    try
+    {
+        CryptoPP::StreamTransformationFilter stfDecryptor(
+            cbcDecryption, new CryptoPP::StringSink(decryptedData)
+        );
 
-    /* Write the data to the AES decryptor stream */
-    stfDecryptor.Put(reinterpret_cast<const CryptoPP::byte *>(buffer.data()),
-                     buffer.size());
+        /* Write the data to the AES decryptor stream */
+        stfDecryptor.Put(reinterpret_cast<const CryptoPP::byte *>(buffer.data()),
+                         buffer.size());
 
-    stfDecryptor.MessageEnd();
+        stfDecryptor.MessageEnd();
+    }
+    catch (const CryptoPP::Exception &)
+    {
+        return {WRONG_PASSWORD, nullptr};
+    }
 
     /* Check that the decrypted data has the 'isCorrectPassword' identifier,
        and remove it it does. If it doesn't, return an error. */
@@ -483,6 +529,10 @@ std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::openWalle
 
     return {error, wallet};
 }
+
+/////////////////////
+/* CLASS FUNCTIONS */
+/////////////////////
 
 WalletError WalletBackend::initializeAfterLoad(
     const std::string filename,
@@ -884,4 +934,83 @@ std::tuple<uint64_t, uint64_t, uint64_t> WalletBackend::getSyncStatus() const
     uint64_t networkBlockCount = m_daemon->getLastKnownBlockHeight();
 
     return {walletSyncProgress, localDaemonBlockCount, networkBlockCount};
+}
+
+std::string WalletBackend::getWalletPassword() const
+{
+    return m_password;
+}
+
+WalletError WalletBackend::changePassword(const std::string newPassword)
+{
+    /* Saving is a tad slow because of pbkdf2, might as well take the
+       optimization here */
+    if (m_password == newPassword)
+    {
+        return SUCCESS;
+    }
+
+    m_password = newPassword;
+
+    return save();
+}
+
+/* Returns all the private spend keys, and the single private view key */
+std::tuple<std::vector<Crypto::SecretKey>, Crypto::SecretKey> WalletBackend::getAllPrivateKeys() const
+{
+    return {m_subWallets->getPrivateSpendKeys(), m_subWallets->getPrivateViewKey()};
+}
+
+/* Returns the private spend key for the primary address, and the shared private view key */
+std::tuple<Crypto::SecretKey, Crypto::SecretKey> WalletBackend::getPrimaryAddressPrivateKeys() const
+{
+    return {m_subWallets->getPrimaryPrivateSpendKey(), m_subWallets->getPrivateViewKey()};
+}
+
+std::tuple<bool, std::string> WalletBackend::getMnemonicSeed() const
+{
+    const auto [privateSpendKey, privateViewKey] = getPrimaryAddressPrivateKeys();
+
+    Crypto::SecretKey derivedPrivateViewKey;
+
+    /* Derive the view key from the spend key, and check if it matches the
+       actual view key */
+    CryptoNote::AccountBase::generateViewFromSpend(
+        privateSpendKey,
+        derivedPrivateViewKey
+    );
+
+    if (derivedPrivateViewKey != privateViewKey)
+    {
+        return {false, std::string()};
+    }
+
+    return {true, Mnemonics::PrivateKeyToMnemonic(privateSpendKey)};
+}
+
+std::vector<WalletTypes::Transaction> WalletBackend::getTransactions() const
+{
+    return m_subWallets->getTransactions();
+}
+
+WalletTypes::WalletStatus WalletBackend::getStatus() const
+{
+    const auto [walletSyncProgress, localDaemonBlockCount, networkBlockCount]
+        = getSyncStatus();
+
+    WalletTypes::WalletStatus status;
+
+    status.walletSyncProgress = walletSyncProgress;
+    status.localDaemonBlockCount = localDaemonBlockCount;
+    status.networkBlockCount = networkBlockCount;
+
+    status.peerCount = m_daemon->getPeerCount();
+
+    uint64_t difficulty = m_daemon->getLastLocalBlockHeaderInfo().difficulty;
+
+    status.lastKnownHashrate = static_cast<uint64_t>(
+        difficulty / CryptoNote::parameters::DIFFICULTY_TARGET
+    );
+
+    return status;
 }
