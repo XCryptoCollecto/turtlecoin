@@ -9,6 +9,7 @@
 #include <zedwallet++/ColouredMsg.h>
 #include <zedwallet++/Menu.h>
 #include <zedwallet++/ParseArguments.h>
+#include <zedwallet++/TransactionMonitor.h>
 
 int main(int argc, char **argv)
 {
@@ -22,8 +23,26 @@ int main(int argc, char **argv)
 
         if (!quit)
         {
-            mainLoop(walletBackend);
+            /* Init the transaction monitor */
+            TransactionMonitor txMonitor(walletBackend);
+
+            /* Launch the transaction monitor in another thread */
+            std::thread txMonitorThread(&TransactionMonitor::start, &txMonitor);
+
+            /* Launch the wallet interface */
+            mainLoop(walletBackend, txMonitor.getMutex());
+
+            /* Stop the transaction monitor */
+            txMonitor.stop();
+
+            /* Wait for the transaction monitor to stop */
+            if (txMonitorThread.joinable())
+            {
+                txMonitorThread.join();
+            }
         }
+
+        std::cout << "Thanks for stopping by..." << std::endl;
     }
     catch (const std::exception &e)
     {

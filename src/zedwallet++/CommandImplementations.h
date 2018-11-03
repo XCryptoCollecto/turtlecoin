@@ -17,17 +17,17 @@ void status(const std::shared_ptr<WalletBackend> walletBackend);
 void printHeights(
     const uint64_t localDaemonBlockCount,
     const uint64_t networkBlockCount,
-    const uint64_t walletSyncProgress);
+    const uint64_t walletBlockCount);
 
 void printSyncStatus(
     const uint64_t localDaemonBlockCount,
     const uint64_t networkBlockCount,
-    const uint64_t walletSyncProgress);
+    const uint64_t walletBlockCount);
 
 void printSyncSummary(
     const uint64_t localDaemonBlockCount,
     const uint64_t networkBlockCount,
-    const uint64_t walletSyncProgress);
+    const uint64_t walletBlockCount);
 
 void printHashrate(const uint64_t difficulty);
 

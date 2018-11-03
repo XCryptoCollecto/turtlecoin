@@ -15,6 +15,7 @@
 #include <WalletBackend/ValidateParameters.h>
 
 #include <zedwallet++/ColouredMsg.h>
+#include <zedwallet++/CommandImplementations.h>
 #include <zedwallet++/PasswordContainer.h>
 #include <zedwallet++/Utilities.h>
 
@@ -51,8 +52,12 @@ std::shared_ptr<WalletBackend> importViewWallet(const Config &config)
 
         if (WalletError error = validateAddresses({address}, integratedAddressesAllowed); error != SUCCESS)
         {
-            std::cout << "Invalid address: " << error << std::endl;
-            continue;
+            std::cout << WarningMsg("Invalid address: ")
+                      << WarningMsg(error) << std::endl;
+        }
+        else
+        {
+            break;
         }
     }
 
@@ -81,7 +86,7 @@ std::shared_ptr<WalletBackend> importViewWallet(const Config &config)
     std::stringstream stream;
 
     stream << "\nYour view only wallet " << walletBackend->getPrimaryAddress()
-           << " has been successfully imported!" << "\n";
+           << " has been successfully imported!\n";
 
     std::cout << InformationMsg(stream.str()) << std::endl;
 
@@ -124,7 +129,7 @@ std::shared_ptr<WalletBackend> importWalletFromKeys(const Config &config)
     std::stringstream stream;
 
     stream << "\nYour wallet " << walletBackend->getPrimaryAddress()
-           << " has been successfully imported!" << "\n";
+           << " has been successfully imported!\n";
 
     std::cout << InformationMsg(stream.str()) << std::endl;
 
@@ -181,7 +186,7 @@ std::shared_ptr<WalletBackend> importWalletFromSeed(const Config &config)
     std::stringstream stream;
 
     stream << "\nYour wallet " << walletBackend->getPrimaryAddress()
-           << " has been successfully imported!" << "\n";
+           << " has been successfully imported!\n";
 
     std::cout << InformationMsg(stream.str()) << std::endl;
 
@@ -266,6 +271,13 @@ std::shared_ptr<WalletBackend> openWallet(const Config &config)
 
             return nullptr;
         }
+
+        std::stringstream stream;
+
+        stream << "\nYour wallet " << walletBackend->getPrimaryAddress()
+               << " has been successfully opened!\n";
+
+        std::cout << InformationMsg(stream.str()) << std::endl;
 
         return walletBackend;
     }
@@ -439,13 +451,10 @@ void promptSaveKeys(const std::shared_ptr<WalletBackend> walletBackend)
 {
     std::cout << "Welcome to your new wallet, here is your payment address:"
               << "\n" << InformationMsg(walletBackend->getPrimaryAddress())
-              << "\n\n"
-              << "Please copy your secret keys and mnemonic seed and store "
-              << "them in a secure location: " << "\n";
+              << "\n\nPlease copy your secret keys and mnemonic seed and store "
+              << "them in a secure location:\n\n";
 
-    /* TODO 
     printPrivateKeys(walletBackend);
-    */
 
     std::cout << std::endl;
 }

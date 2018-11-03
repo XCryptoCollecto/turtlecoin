@@ -102,6 +102,7 @@ class WalletBackend
             const std::string daemonHost,
             const uint16_t daemonPort);
 
+        /* Create an integrated address from an address + paymentID */
         static std::tuple<WalletError, std::string> createIntegratedAddress(
             const std::string address,
             const std::string paymentID);
@@ -110,6 +111,7 @@ class WalletBackend
         /* Public member functions */
         /////////////////////////////
 
+        /* Save the wallet to disk */
         WalletError save() const;
 
         /* Converts the class to a json object */
@@ -118,11 +120,13 @@ class WalletBackend
         /* Initializes the class from a json string */
         void fromJson(const json &j);
         
+        /* Send a transaction of amount to destination with paymentID */
         std::tuple<WalletError, Crypto::Hash> sendTransactionBasic(
             const std::string destination,
             const uint64_t amount,
             const std::string paymentID);
 
+        /* Advanced send transaction, specify mixin, change address, etc */
         std::tuple<WalletError, Crypto::Hash> sendTransactionAdvanced(
             const std::vector<std::pair<std::string, uint64_t>> destinations,
             const uint64_t mixin,
@@ -131,8 +135,11 @@ class WalletBackend
             const std::vector<std::string> subWalletsToTakeFrom,
             const std::string changeAddress);
 
+        /* Send a fusion using default mixin, default destination, and
+           taking from all subwallets */
         std::tuple<WalletError, Crypto::Hash> sendFusionTransactionBasic();
 
+        /* Send a fusion with advanced options */
         std::tuple<WalletError, Crypto::Hash> sendFusionTransactionAdvanced(
             const uint64_t mixin,
             const std::vector<std::string> subWalletsToTakeFrom,
@@ -145,43 +152,62 @@ class WalletBackend
         /* Get the balance for all subwallets */
         std::tuple<uint64_t, uint64_t> getTotalBalance() const;
 
+        /* Make a new sub wallet (gens a privateSpendKey) */
         WalletError addSubWallet();
 
+        /* Import a sub wallet with the given privateSpendKey */
         WalletError importSubWallet(
             const Crypto::SecretKey privateSpendKey,
             const uint64_t scanHeight,
             const bool newWallet);
 
+        /* Import a view only sub wallet with the given publicSpendKey */
         WalletError importViewSubWallet(
             const Crypto::PublicKey publicSpendKey,
             const uint64_t scanHeight,
             const bool newWallet);
 
+        /* Scan the blockchain, starting from scanHeight / timestamp */
         void reset(uint64_t scanHeight, uint64_t timestamp);
 
+        /* Is the wallet a view only wallet */
         bool isViewWallet() const;
 
+        /* Get the filename of the wallet on disk */
         std::string getWalletLocation() const;
 
+        /* Get the primary address */
         std::string getPrimaryAddress() const;
 
         /* wallet sync height, local blockchain sync height,
            remote blockchain sync height */
         std::tuple<uint64_t, uint64_t, uint64_t> getSyncStatus() const;
 
+        /* Get the wallet password */
         std::string getWalletPassword() const;
 
+        /* Change the wallet password and save the wallet with the new password */
         WalletError changePassword(const std::string newPassword);
 
+        /* Get all private spend keys, and private view key */
         std::tuple<std::vector<Crypto::SecretKey>, Crypto::SecretKey> getAllPrivateKeys() const;
 
+        /* Get the private spend and private view for the primary address */
         std::tuple<Crypto::SecretKey, Crypto::SecretKey> getPrimaryAddressPrivateKeys() const;
 
+        /* Get the primary address mnemonic seed, if possible */
         std::tuple<bool, std::string> getMnemonicSeed() const;
 
+        /* Get all transactions */
         std::vector<WalletTypes::Transaction> getTransactions() const;
 
+        /* Get sync heights, hashrate, peer count */
         WalletTypes::WalletStatus getStatus() const;
+
+        /* Returns transactions in the range [startHeight, endHeight - 1] - so if
+           we give 1, 100, it will return transactions from block 1 to block 99 */
+        std::vector<WalletTypes::Transaction> getTransactionsRange(
+            const uint64_t startHeight, const uint64_t endHeight) const;
         
         /////////////////////////////
         /* Public member variables */

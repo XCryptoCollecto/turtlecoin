@@ -489,6 +489,9 @@ std::tuple<WalletError, std::shared_ptr<WalletBackend>> WalletBackend::openWalle
 
         stfDecryptor.MessageEnd();
     }
+    /* do NOT report an alternate error for invalid padding. It allows them
+       to do a padding oracle attack, I believe. Just report the wrong password
+       error. */
     catch (const CryptoPP::Exception &)
     {
         return {WRONG_PASSWORD, nullptr};
@@ -925,7 +928,7 @@ std::string WalletBackend::getPrimaryAddress() const
 std::tuple<uint64_t, uint64_t, uint64_t> WalletBackend::getSyncStatus() const
 {
     /* The last block the wallet has synced */
-    uint64_t walletSyncProgress = m_walletSynchronizer->getCurrentScanHeight();
+    uint64_t walletBlockCount = m_walletSynchronizer->getCurrentScanHeight();
 
     /* The last block the daemon has synced */
     uint64_t localDaemonBlockCount = m_daemon->getLastLocalBlockHeight();
@@ -933,7 +936,7 @@ std::tuple<uint64_t, uint64_t, uint64_t> WalletBackend::getSyncStatus() const
     /* The last block on the network, that the daemon is aware of */
     uint64_t networkBlockCount = m_daemon->getLastKnownBlockHeight();
 
-    return {walletSyncProgress, localDaemonBlockCount, networkBlockCount};
+    return {walletBlockCount, localDaemonBlockCount, networkBlockCount};
 }
 
 std::string WalletBackend::getWalletPassword() const
@@ -995,12 +998,12 @@ std::vector<WalletTypes::Transaction> WalletBackend::getTransactions() const
 
 WalletTypes::WalletStatus WalletBackend::getStatus() const
 {
-    const auto [walletSyncProgress, localDaemonBlockCount, networkBlockCount]
+    const auto [walletBlockCount, localDaemonBlockCount, networkBlockCount]
         = getSyncStatus();
 
     WalletTypes::WalletStatus status;
 
-    status.walletSyncProgress = walletSyncProgress;
+    status.walletBlockCount = walletBlockCount;
     status.localDaemonBlockCount = localDaemonBlockCount;
     status.networkBlockCount = networkBlockCount;
 
@@ -1013,4 +1016,22 @@ WalletTypes::WalletStatus WalletBackend::getStatus() const
     );
 
     return status;
+}
+
+/* Returns transactions in the range [startHeight, endHeight - 1] - so if
+   we give 1, 100, it will return transactions from block 1 to block 99 */
+std::vector<WalletTypes::Transaction> WalletBackend::getTransactionsRange(
+    const uint64_t startHeight, const uint64_t endHeight) const
+{
+    std::vector<WalletTypes::Transaction> result;
+
+    const auto transactions = getTransactions();
+
+    std::copy_if(transactions.begin(), transactions.end(), std::back_inserter(result),
+    [&startHeight, &endHeight](const auto tx)
+    {
+        return tx.blockHeight >= startHeight && tx.blockHeight < endHeight;
+    });
+
+    return result;
 }

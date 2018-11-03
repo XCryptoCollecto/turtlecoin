@@ -269,7 +269,7 @@ namespace WalletTypes
     struct WalletStatus
     {
         /* The amount of blocks the wallet has synced */
-        uint64_t walletSyncProgress;
+        uint64_t walletBlockCount;
 
         /* The amount of blocks the daemon we are connected to has synced */
         uint64_t localDaemonBlockCount;

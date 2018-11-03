@@ -75,7 +75,7 @@ bool checkNodeStatus(const std::shared_ptr<WalletBackend> walletBackend)
 {
     while (true)
     {
-        const auto [walletSyncProgress, localDaemonBlockCount, networkBlockCount]
+        const auto [walletBlockCount, localDaemonBlockCount, networkBlockCount]
             = walletBackend->getSyncStatus();
 
         /* Daemon is online */
@@ -89,9 +89,10 @@ bool checkNodeStatus(const std::shared_ptr<WalletBackend> walletBackend)
         msg << "It looks like " << WalletConfig::daemonName << " isn't open!"
             << std::endl << std::endl
             << "Ensure " << WalletConfig::daemonName
-            << " is open and has finished syncing." << std::endl
+            << " is open and has finished syncing. "
+            << "(It will often not respond when syncing)" << std::endl
             << "If it's still not working, try restarting "
-            << WalletConfig::daemonName << "."
+            << WalletConfig::daemonName << " (or try a different remote node)."
             << "The daemon sometimes gets stuck."
             << std::endl << "Alternatively, perhaps "
             << WalletConfig::daemonName << " can't communicate with any peers."
@@ -144,7 +145,9 @@ std::string getAction(const Config &config)
     );
 }
 
-void mainLoop(const std::shared_ptr<WalletBackend> walletBackend)
+void mainLoop(
+    const std::shared_ptr<WalletBackend> walletBackend,
+    const std::shared_ptr<std::mutex> mutex)
 {
     if (walletBackend->isViewWallet())
     {
@@ -174,7 +177,7 @@ void mainLoop(const std::shared_ptr<WalletBackend> walletBackend)
         }
 
         /* User exited */
-        if (!handleCommand(command, walletBackend))
+        if (!handleCommand(command, walletBackend, mutex))
         {
             return;
         }

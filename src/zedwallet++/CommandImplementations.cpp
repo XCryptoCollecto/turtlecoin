@@ -116,7 +116,7 @@ void balance(const std::shared_ptr<WalletBackend> walletBackend)
                                     "inflated.") << std::endl;
     }
 
-    const auto [walletSyncProgress, localDaemonBlockCount, networkBlockCount]
+    const auto [walletBlockCount, localDaemonBlockCount, networkBlockCount]
         = walletBackend->getSyncStatus();
 
     if (localDaemonBlockCount < networkBlockCount)
@@ -130,7 +130,7 @@ void balance(const std::shared_ptr<WalletBackend> walletBackend)
     }
     /* Small buffer because wallet height doesn't update instantly like node
        height does */
-    else if (walletSyncProgress + 1000 < networkBlockCount)
+    else if (walletBlockCount + 1000 < networkBlockCount)
     {
         std::cout << std::endl
                   << InformationMsg("The blockchain is still being scanned for "
@@ -144,7 +144,7 @@ void balance(const std::shared_ptr<WalletBackend> walletBackend)
 void printHeights(
     const uint64_t localDaemonBlockCount,
     const uint64_t networkBlockCount,
-    const uint64_t walletSyncProgress)
+    const uint64_t walletBlockCount)
 {
     /* This is the height that the wallet has been scanned to. The blockchain
        can be fully updated, but we have to walk the chain to find our
@@ -153,13 +153,13 @@ void printHeights(
 
     /* Small buffer because wallet height doesn't update instantly like node
        height does */
-    if (walletSyncProgress + 1000 > networkBlockCount)
+    if (walletBlockCount + 1000 > networkBlockCount)
     {
-        std::cout << SuccessMsg(std::to_string(walletSyncProgress));
+        std::cout << SuccessMsg(std::to_string(walletBlockCount));
     }
     else
     {
-        std::cout << WarningMsg(std::to_string(walletSyncProgress));
+        std::cout << WarningMsg(std::to_string(walletBlockCount));
     }
 
     std::cout << std::endl << "Local blockchain height: ";
@@ -180,13 +180,13 @@ void printHeights(
 void printSyncStatus(
     const uint64_t localDaemonBlockCount,
     const uint64_t networkBlockCount,
-    const uint64_t walletSyncProgress)
+    const uint64_t walletBlockCount)
 {
     std::string networkSyncPercentage
         = Common::get_sync_percentage(localDaemonBlockCount, networkBlockCount) + "%";
 
     std::string walletSyncPercentage
-        = Common::get_sync_percentage(walletSyncProgress, networkBlockCount) + "%";
+        = Common::get_sync_percentage(walletBlockCount, networkBlockCount) + "%";
 
     std::cout << "Network sync status: ";
 
@@ -202,7 +202,7 @@ void printSyncStatus(
     std::cout << "Wallet sync status: ";
     
     /* Small buffer because wallet height is not always completely accurate */
-    if (walletSyncProgress + 1000 > networkBlockCount)
+    if (walletBlockCount + 1000 > networkBlockCount)
     {
         std::cout << SuccessMsg(walletSyncPercentage) << std::endl;
     }
@@ -215,7 +215,7 @@ void printSyncStatus(
 void printSyncSummary(
     const uint64_t localDaemonBlockCount,
     const uint64_t networkBlockCount,
-    const uint64_t walletSyncProgress)
+    const uint64_t walletBlockCount)
 {
     if (localDaemonBlockCount == 0 && networkBlockCount == 0)
     {
@@ -224,7 +224,7 @@ void printSyncSummary(
                   << WarningMsg(" open!")
                   << std::endl;
     }
-    else if (walletSyncProgress + 1000 < networkBlockCount && localDaemonBlockCount == networkBlockCount)
+    else if (walletBlockCount + 1000 < networkBlockCount && localDaemonBlockCount == networkBlockCount)
     {
         std::cout << InformationMsg("You are synced with the network, but the "
                                     "blockchain is still being scanned for "
@@ -264,7 +264,7 @@ void status(const std::shared_ptr<WalletBackend> walletBackend)
     /* Print the heights of local, remote, and wallet */
     printHeights(
         status.localDaemonBlockCount, status.networkBlockCount,
-        status.walletSyncProgress
+        status.walletBlockCount
     );
 
     std::cout << "\n";
@@ -272,7 +272,7 @@ void status(const std::shared_ptr<WalletBackend> walletBackend)
     /* Print the network and wallet sync status in percentage */
     printSyncStatus(
         status.localDaemonBlockCount, status.networkBlockCount,
-        status.walletSyncProgress
+        status.walletBlockCount
     );
 
     std::cout << "\n";
@@ -286,7 +286,7 @@ void status(const std::shared_ptr<WalletBackend> walletBackend)
     /* Print a summary of the sync status */
     printSyncSummary(
         status.localDaemonBlockCount, status.networkBlockCount,
-        status.walletSyncProgress
+        status.walletBlockCount
     );
 }
 

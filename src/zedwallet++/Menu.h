@@ -15,7 +15,9 @@ bool checkNodeStatus(const std::shared_ptr<WalletBackend> walletBackend);
 
 std::string getAction(const Config &config);
 
-void mainLoop(const std::shared_ptr<WalletBackend> walletBackend);
+void mainLoop(
+    const std::shared_ptr<WalletBackend> walletBackend,
+    const std::shared_ptr<std::mutex> mutex);
 
 template<typename T>
 std::string parseCommand(
